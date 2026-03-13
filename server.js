@@ -36,9 +36,7 @@ app.post("/embed", async (req, res) => {
       normalize: true,
     });
 
-    res.json({
-      embedding: Array.from(output.data),
-    });
+    res.json(Array.from(output.data));
 
   } catch (error) {
     console.error(error);
