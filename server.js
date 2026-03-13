@@ -1,28 +1,37 @@
-import express from "express";
-import { pipeline } from "@xenova/transformers";
+const express = require('express')
+const { pipeline } = require('@xenova/transformers')
 
 const app = express();
 app.use(express.json());
 
-let extractor;
+let featureExtraction;
 
-// load model once
-async function loadModel() {
-  console.log("Loading embedding model...");
-  extractor = await pipeline(
+const createFeatureExtraction = async () => {
+    return pipeline(
     "feature-extraction",
     "Xenova/all-MiniLM-L6-v2"
-  );
-  console.log("Model loaded");
-}
+  )
+};
 
-await loadModel();
+// load model once
+async function getFeatureExtraction() {
+    if (!featureExtraction) {
+        // Assign the promise itself to the variable
+        featureExtraction = createFeatureExtraction();
+    }
+    console.log('featureExtraction', featureExtraction)
+    // Await the promise, all callers will await the same promise
+    return featureExtraction;
+}
 
 app.post("/embed", async (req, res) => {
   try {
     const { text } = req.body;
 
-    const output = await extractor(text, {
+    const embeddingModel = await getFeatureExtraction()
+    console.log('embeddingModel', embeddingModel)
+
+    const output = await embeddingModel(text, {
       pooling: "mean",
       normalize: true,
     });
